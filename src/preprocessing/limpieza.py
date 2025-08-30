@@ -15,7 +15,7 @@ def normalizar_espacios(texto):
 
 def limpiar_corpus(ruta, archivo):
     data_path = os.path.join(ruta, "data", "raw", archivo)
-    print(f'Cargando corpus desde: {data_path}...')
+    print('\n',f'Cargando corpus desde: {data_path}...')
     corpus = pd.read_csv(data_path, encoding="utf-8")
     corpus['Review'] = corpus['Review'].apply(limpiar_truncamientos)
     corpus['Review'] = corpus['Review'].apply(normalizar_espacios)

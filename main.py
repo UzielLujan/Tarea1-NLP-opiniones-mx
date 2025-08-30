@@ -3,8 +3,9 @@
 from src.preprocessing.limpieza import limpiar_corpus
 
 from src.analysis.estadisticas import generar_estadisticas
-'''
+
 from src.analysis.zipf import analizar_zipf
+'''
 from src.features.bow import construir_bow_tfidf
 from src.features.feature_selection import seleccionar_caracteristicas
 from src.embeddings.word2vec import entrenar_word2vec, analogias
@@ -15,23 +16,24 @@ from src.topics.lsa import ejecutar_lsa
 from src.visualization.utils import configurar_estilo_visual
 '''
 import os
+from nltk.corpus import stopwords
+stopwords_es = set(stopwords.words('spanish'))
 
 def main():
     print("🔧 Iniciando pipeline de Tarea 1 NLP...")
     
     archivo = "MeIA_2025_train.csv"
     base_dir = os.path.dirname(os.path.abspath(__file__))
+
     # Paso 1: Preprocesamiento
     corpus_limpio = limpiar_corpus(base_dir, archivo)
-    print(corpus_limpio['Review'][0])
-    print(corpus_limpio["Review"][10])
 
-    
     # Paso 2: Análisis descriptivo
     generar_estadisticas(corpus_limpio)
-    '''
-    analizar_zipf(corpus_limpio)
+    
 
+    analizar_zipf(corpus_limpio, columna_texto='Review', eliminar_stopwords=False, stopwords_set=stopwords_es)
+    '''
     # Paso 3: Representaciones BoW / TF-IDF
     bow, tfidf = construir_bow_tfidf(corpus_limpio)
 

@@ -20,7 +20,7 @@ Aplicar un pipeline integral de NLP para:
 
 ## 📂 Estructura del proyecto
 ```bash
-Tarea1_NLP/
+Tarea1_NLP-opiniones-mx/
 │── data/                 # Corpus y datos procesados
 │   ├── raw/              # Corpus original
 │   ├── interim/          # Datos intermedios (tokens, embeddings)
