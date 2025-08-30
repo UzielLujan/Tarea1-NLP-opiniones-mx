@@ -1,8 +1,9 @@
 # Script principal para orquestar el pipeline
 
 from src.preprocessing.limpieza import limpiar_corpus
-'''
+
 from src.analysis.estadisticas import generar_estadisticas
+'''
 from src.analysis.zipf import analizar_zipf
 from src.features.bow import construir_bow_tfidf
 from src.features.feature_selection import seleccionar_caracteristicas
@@ -25,9 +26,10 @@ def main():
     print(corpus_limpio['Review'][0])
     print(corpus_limpio["Review"][10])
 
-    '''
+    
     # Paso 2: Análisis descriptivo
     generar_estadisticas(corpus_limpio)
+    '''
     analizar_zipf(corpus_limpio)
 
     # Paso 3: Representaciones BoW / TF-IDF
