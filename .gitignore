@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.pkl
+*.joblib
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Entornos virtuales
+.venv/
+env/
+venv/
+
+# Archivos temporales o de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de VSCode (opcional)
+.vscode/
+
+# Reportes generados
+/reports/*.pdf
+/reports/figures/
+
+# Datos procesados
+/data/interim/
+/data/processed/
+
+# Logs y otros
+*.log

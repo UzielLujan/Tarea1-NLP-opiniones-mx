@@ -1,0 +1,23 @@
+# Procesamiento y análisis de texto
+pandas
+numpy
+scikit-learn
+nltk
+spacy
+gensim
+
+
+matplotlib
+seaborn
+
+
+tqdm
+
+
+scipy
+
+
+scikit-learn
+
+
+es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.5.0/es_core_news_sm-3.5.0-py3-none-any.whl
