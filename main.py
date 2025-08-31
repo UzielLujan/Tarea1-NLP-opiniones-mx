@@ -5,9 +5,11 @@ from src.preprocessing.limpieza import limpiar_corpus
 from src.analysis.estadisticas import generar_estadisticas
 
 from src.analysis.zipf import analizar_zipf
-'''
+
 from src.features.bow import construir_bow_tfidf
+
 from src.features.feature_selection import seleccionar_caracteristicas
+'''
 from src.embeddings.word2vec import entrenar_word2vec, analogias
 from src.embeddings.doc_embeddings import calcular_doc_embeddings
 from src.clustering.kmeans import clusterizar_documentos
@@ -30,13 +32,12 @@ def main():
 
     # Paso 2: Análisis descriptivo
     generar_estadisticas(corpus_limpio)
-    
+    analizar_zipf(corpus_limpio, columna_texto='Review', eliminar_stopwords=False, stopwords_set=stopwords_es, top_n=100)
 
-    analizar_zipf(corpus_limpio, columna_texto='Review', eliminar_stopwords=False, stopwords_set=stopwords_es)
-    '''
     # Paso 3: Representaciones BoW / TF-IDF
-    bow, tfidf = construir_bow_tfidf(corpus_limpio)
-
+    #bow, tfidf, vec_bow, vec_tfidf = construir_bow_tfidf(corpus_limpio)
+    
+    '''
     # Paso 4: Selección de características
     seleccionar_caracteristicas(bow, tfidf)
 
