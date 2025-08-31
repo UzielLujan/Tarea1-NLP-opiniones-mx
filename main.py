@@ -6,13 +6,17 @@ from src.analysis.estadisticas import generar_estadisticas
 
 from src.analysis.zipf import analizar_zipf
 
+#from src.analysis.palabras_y_pos import palabras_frecuentes_por_clase, pos_4gramas_por_clase
+
 from src.features.bow import construir_bow_tfidf
 
 from src.features.feature_selection import seleccionar_caracteristicas
+
+#from src.embeddings.word2vec import entrenar_word2vec, analogias
+
+#from src.embeddings.doc_embeddings import calcular_doc_embeddings
+#from src.clustering.kmeans import clusterizar_documentos
 '''
-from src.embeddings.word2vec import entrenar_word2vec, analogias
-from src.embeddings.doc_embeddings import calcular_doc_embeddings
-from src.clustering.kmeans import clusterizar_documentos
 from src.modeling.train_model import ejecutar_experimentos_clasificacion
 from src.topics.lsa import ejecutar_lsa
 from src.visualization.utils import configurar_estilo_visual
@@ -37,18 +41,25 @@ def main():
     # Paso 3: Representaciones BoW / TF-IDF
     #bow, tfidf, vec_bow, vec_tfidf = construir_bow_tfidf(corpus_limpio)
     
-    '''
+    
     # Paso 4: Selección de características
-    seleccionar_caracteristicas(bow, tfidf)
-
+    '''
+    top_chi2, top_mi = seleccionar_caracteristicas(
+        bow_matrix=bow,
+        tfidf_matrix=tfidf,
+        labels=corpus_limpio["Polarity"],
+        vectorizer_bow=vec_bow,
+        vectorizer_tfidf=vec_tfidf
+    )
+    '''
     # Paso 5: Embeddings Word2Vec
-    model_w2v = entrenar_word2vec(corpus_limpio)
-    analogias(model_w2v)
-
+    #model_w2v = entrenar_word2vec(corpus_limpio)
+    #analogias(model_w2v)
+    
     # Paso 6: Embeddings de documento y clusterización
-    embeddings = calcular_doc_embeddings(corpus_limpio, model_w2v)
-    clusterizar_documentos(embeddings)
-
+    #embeddings = calcular_doc_embeddings(corpus_limpio, model_w2v)
+    #df_clusterizado, textos_por_cluster = clusterizar_documentos(embeddings, corpus_limpio)
+    '''
     # Paso 7: Clasificación con distintas variantes de preprocesamiento
     ejecutar_experimentos_clasificacion("data/processed/dataset.csv")
 
