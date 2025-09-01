@@ -21,7 +21,9 @@ def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=T
     # Conteo de frecuencias
     frecuencia = Counter(tokens)
     palabras_ordenadas = frecuencia.most_common()
-
+    print('Top 10 palabras:')
+    for i, (palabra, freq) in enumerate(palabras_ordenadas[:10]):
+        print(f" {i + 1}. {palabra}: {freq}")
     rangos = np.arange(1, len(palabras_ordenadas) + 1)
     frecuencias = np.array([f for _, f in palabras_ordenadas])
 
@@ -48,8 +50,8 @@ def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=T
 
     # Graficar
     plt.figure(figsize=(8, 5))
-    plt.plot(log_rangos_fit, log_frecuencias_fit, label='Datos reales', alpha=0.7)
-    plt.plot(log_rangos_fit, np.polyval(coef, log_rangos_fit), '--', label='Ajuste lineal')
+    plt.scatter(log_rangos_fit, log_frecuencias_fit, label='Datos reales', alpha=0.7)
+    plt.plot(log_rangos_fit, np.polyval(coef, log_rangos_fit), color='red', linestyle='--', label='Ajuste lineal')
     plt.title("Ley de Zipf - log(Rango) vs log(Frecuencia)")
     plt.xlabel("log10(Rango)")
     plt.ylabel("log10(Frecuencia)")

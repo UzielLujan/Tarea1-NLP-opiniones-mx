@@ -11,6 +11,8 @@ def limpiar_truncamientos(texto):
 def normalizar_espacios(texto):
     texto = texto.replace('\n', ' ')
     texto = re.sub(r'\s+', ' ', texto)
+    # Eliminar puntos, comas y signos de puntuación
+    texto = re.sub(r'[.,;!?]', '', texto)
     return texto.strip()
 
 def limpiar_corpus(ruta, archivo):

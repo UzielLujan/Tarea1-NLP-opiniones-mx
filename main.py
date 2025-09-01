@@ -36,7 +36,7 @@ def main():
 
     # Paso 2: Análisis descriptivo
     generar_estadisticas(corpus_limpio)
-    analizar_zipf(corpus_limpio, columna_texto='Review', eliminar_stopwords=False, stopwords_set=stopwords_es, top_n=100)
+    analizar_zipf(corpus_limpio, columna_texto='Review', eliminar_stopwords=True, stopwords_set=stopwords_es, top_n=None)
 
     # Paso 3: Representaciones BoW / TF-IDF
     #bow, tfidf, vec_bow, vec_tfidf = construir_bow_tfidf(corpus_limpio)
