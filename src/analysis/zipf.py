@@ -6,7 +6,7 @@ import numpy as np
 import nltk
 from collections import Counter
 import os
-
+import scipy.stats
 nltk.download('punkt', quiet=True)
 
 def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=True, stopwords_set=None, top_n=None):
@@ -39,10 +39,11 @@ def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=T
         log_frecuencias_fit = log_frecuencias
 
     # Ajuste de regresión lineal
-    coef = np.polyfit(log_rangos_fit, log_frecuencias_fit, deg=1)
-    pendiente, interseccion = coef
-    # Coeficiente de determinación
-    r2 = 1 - (np.sum((log_frecuencias_fit - np.polyval(coef, log_rangos_fit))**2) / np.sum((log_frecuencias_fit - np.mean(log_frecuencias_fit))**2))
+    slope, intercept, r_value, _, _ = scipy.stats.linregress(log_rangos_fit, log_frecuencias_fit)
+    pendiente = slope
+    interseccion = intercept
+    r2 = r_value ** 2
+
     print(f"- Exponente de Zipf (s): {-pendiente:.4f}")
     print(f"- Constante C (modelo): {10**interseccion:.2f}, Frecuencia palabra más común: {frecuencias[0]:.2f}")
     print(f"- Δ C vs f(1): {abs(10**interseccion - frecuencias[0]):.2f}")
@@ -51,7 +52,7 @@ def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=T
     # Graficar
     plt.figure(figsize=(8, 5))
     plt.scatter(log_rangos_fit, log_frecuencias_fit, label='Datos reales', alpha=0.7)
-    plt.plot(log_rangos_fit, np.polyval(coef, log_rangos_fit), color='red', linestyle='--', label='Ajuste lineal')
+    plt.plot(log_rangos_fit, pendiente * log_rangos_fit + interseccion, color='red', linestyle='--', label='Ajuste lineal')
     plt.title("Ley de Zipf - log(Rango) vs log(Frecuencia)")
     plt.xlabel("log10(Rango)")
     plt.ylabel("log10(Frecuencia)")
@@ -60,11 +61,11 @@ def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=T
 
     output_dir = os.path.join("reports", "figures")
     os.makedirs(output_dir, exist_ok=True)
-    suffix = "no_stopwords" if eliminar_stopwords else "con_stopwords"
+    suffix = "sin_stopwords" if eliminar_stopwords else "con_stopwords"
     if top_n:
         suffix += f"_top{top_n}"
     filename = f"zipf_plot_{suffix}.png"
     output_path = os.path.join(output_dir, filename)
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=300)
     print(f"- Gráfica guardada en {output_path}")
     plt.close()

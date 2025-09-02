@@ -22,9 +22,9 @@ def generar_estadisticas(df: pd.DataFrame, columna_texto="Review", columna_clase
     print(f"- Número de documentos: {num_docs}")
 
     # Tokenización básica por espacios
-    tokens = df[columna_texto].str.split().explode()
-    total_tokens = tokens.shape[0]
-    print(f"- Número total de tokens (por espacios): {total_tokens}")
+    #tokens = df[columna_texto].str.split().explode()
+    #total_tokens = tokens.shape[0]
+    #print(f"- Número total de tokens (por espacios): {total_tokens}")
     
     # Tokenización robusta usando NLTK
     tokens = df[columna_texto].apply(lambda x: nltk.word_tokenize(str(x), language='spanish')).explode()

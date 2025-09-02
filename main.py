@@ -21,6 +21,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--pipeline_completo", action="store_true")
+    parser.add_argument("--estadisticas", action="store_true")
     parser.add_argument("--zipf", action="store_true")
     parser.add_argument("--frecuentes", action="store_true")
     parser.add_argument("--pos", action="store_true")
@@ -43,9 +44,8 @@ def main():
     corpus = limpiar_corpus(base_dir, archivo)
     stopwords_es = set(stopwords.words("spanish"))
 
-    generar_estadisticas(corpus)
-
     if args.pipeline_completo:
+        args.estadisticas = True
         args.zipf = True
         args.frecuentes = True
         args.pos = True
@@ -55,6 +55,9 @@ def main():
         args.cluster = True
         args.clasificacion = True
         args.lsa = True
+
+    if args.estadisticas:
+        generar_estadisticas(corpus)
 
     if args.zipf:
         analizar_zipf(
