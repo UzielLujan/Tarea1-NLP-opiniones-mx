@@ -12,7 +12,7 @@ def normalizar_espacios(texto):
     texto = texto.replace('\n', ' ')
     texto = re.sub(r'\s+', ' ', texto)
     # Eliminar puntos, comas y signos de puntuación
-    texto = re.sub(r'[.,;!?]', '', texto)
+    texto = re.sub(r'[^\w\s]', '', texto)
     return texto.strip()
 
 def limpiar_corpus(ruta, archivo):

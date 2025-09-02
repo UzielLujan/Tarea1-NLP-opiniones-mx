@@ -47,3 +47,41 @@ Tarea1_NLP-opiniones-mx/
 │── requirements.txt      # Dependencias
 │── README.md             # Documentación del proyecto
 │── main.py               # Script principal que ejecuta el pipeline completo
+
+```
+## 🛠️ Entorno reproducible
+
+Para correr este proyecto localmente, usar el entorno `conda` definido en `environment.yml`.
+
+### 🔁 Crear entorno desde cero
+
+```bash
+conda env create -f environment.yml
+conda activate tarea1-nlp
+```
+
+
+## 🧪 Ejecutar el pipeline por partes
+
+1. Analizar Ley de Zipf sin stopwords y con top_n=100:
+```bash
+python main.py --zipf --sin_stopwords --top_n 100
+```
+
+2. Generar palabras frecuentes y 4-gramas POS:
+```bash
+python main.py --frecuentes --pos
+```
+3. Entrenar Word2Vec y correr analogías:
+```bash
+python main.py --word2vec
+```
+4. Crear BoW y TF-IDF con bigramas y min_df=10:
+```bash
+python main.py --bow --min_df 10 --ngram_max 2
+```
+
+5. Ejecutar solo LSA:
+```bash
+python main.py --lsa
+```
