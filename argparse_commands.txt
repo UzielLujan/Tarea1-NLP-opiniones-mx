@@ -1,0 +1,14 @@
+1. Analizar Ley de Zipf sin stopwords y con top_n=100:
+python main.py --zipf --sin_stopwords --top_n 100
+
+2. Generar palabras frecuentes y 4-gramas POS:
+python main.py --frecuentes --pos
+
+3. Entrenar Word2Vec y correr analogías:
+python main.py --word2vec
+
+4. Crear BoW y TF-IDF con bigramas y min_df=10:
+python main.py --bow --min_df 10 --ngram_max 2
+
+5. Ejecutar solo LSA:
+python main.py --lsa
