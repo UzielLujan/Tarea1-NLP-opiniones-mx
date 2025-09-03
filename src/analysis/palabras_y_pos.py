@@ -19,7 +19,7 @@ def palabras_frecuentes_por_clase(df: pd.DataFrame, columna_texto="Review", colu
 
     clases = df[columna_clase].unique()
     resultados = {}
-    output_dir = os.path.join("reports", "features")
+    output_dir = os.path.join("reports", "statistics")
     os.makedirs(output_dir, exist_ok=True)
 
     for clase in sorted(clases):
@@ -70,7 +70,7 @@ def pos_4gramas_global(df: pd.DataFrame, columna_texto="Review", top_n=10):
         print(f"- {tag_str}: {freq}")
 
     # Guardar CSV global
-    output_dir = os.path.join("reports", "features")
+    output_dir = os.path.join("reports", "statistics")
     os.makedirs(output_dir, exist_ok=True)
     df_ngrams = pd.DataFrame([("-".join(ng), freq) for ng, freq in mas_comunes], columns=["4gram_POS", "Frecuencia"])
     df_ngrams.to_csv(os.path.join(output_dir, "4gramas_POS_global.csv"), index=False)
