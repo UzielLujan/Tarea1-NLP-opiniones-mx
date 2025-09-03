@@ -52,13 +52,48 @@ def palabras_frecuentes_por_clase(df: pd.DataFrame, columna_texto="Review", colu
 
     return resultados
 
-def pos_4gramas_por_clase(df: pd.DataFrame, columna_texto="Review", columna_clase="Polarity", top_n=10):
-    print("\n🔤 4-gramas gramaticales por clase:")
+def pos_4gramas_global(df: pd.DataFrame, columna_texto="Review", top_n=10):
+    print("\n🔤 4-gramas gramaticales más frecuentes en todo el corpus:")
 
     def obtener_4gramas_pos(texto):
         doc = nlp(str(texto))
         tags = [token.pos_ for token in doc]
-        return zip(*(islice(tags, i, None) for i in range(4)))
+        return list(zip(*(islice(tags, i, None) for i in range(4))))
+
+    # Extraer todos los 4-gramas POS del corpus
+    ngramas = df[columna_texto].apply(obtener_4gramas_pos).explode()
+    conteo = Counter(ngramas)
+    mas_comunes = conteo.most_common(top_n)
+
+    for ngrama, freq in mas_comunes:
+        tag_str = "-".join(ngrama)
+        print(f"- {tag_str}: {freq}")
+
+    # Guardar CSV global
+    output_dir = os.path.join("reports", "features")
+    os.makedirs(output_dir, exist_ok=True)
+    df_ngrams = pd.DataFrame([("-".join(ng), freq) for ng, freq in mas_comunes], columns=["4gram_POS", "Frecuencia"])
+    df_ngrams.to_csv(os.path.join(output_dir, "4gramas_POS_global.csv"), index=False)
+
+    return mas_comunes
+
+def pos_4gramas_por_clase(df: pd.DataFrame, columna_texto="Review", columna_clase="Polarity", top_n=5):
+    print("\n🔤 4-gramas gramaticales por clase (filtrando los más frecuentes globales):")
+
+    def obtener_4gramas_pos(texto):
+        doc = nlp(str(texto))
+        tags = [token.pos_ for token in doc]
+        return list(zip(*(islice(tags, i, None) for i in range(4))))
+
+    # Lista de 4-gramas POS globales poco discriminantes
+    global_4gramas = {
+        ('NOUN', 'ADP', 'DET', 'NOUN'),
+        ('DET', 'NOUN', 'ADP', 'NOUN'),
+        ('ADP', 'DET', 'NOUN', 'ADP'),
+        ('DET', 'NOUN', 'ADP', 'DET'),
+        ('VERB', 'ADP', 'DET', 'NOUN'),
+        ('VERB', 'DET', 'NOUN', 'ADP'),
+    }
 
     clases = df[columna_clase].unique()
     resultados = {}
@@ -68,7 +103,9 @@ def pos_4gramas_por_clase(df: pd.DataFrame, columna_texto="Review", columna_clas
     for clase in sorted(clases):
         subset = df[df[columna_clase] == clase]
         ngramas = subset[columna_texto].apply(obtener_4gramas_pos).explode()
-        conteo = Counter(ngramas)
+        # Filtrar los 4-gramas globales poco discriminantes
+        ngramas_filtrados = ngramas[~ngramas.isin(global_4gramas)]
+        conteo = Counter(ngramas_filtrados)
         mas_comunes = conteo.most_common(top_n)
         resultados[clase] = mas_comunes
 
@@ -79,6 +116,6 @@ def pos_4gramas_por_clase(df: pd.DataFrame, columna_texto="Review", columna_clas
 
         # Guardar CSV por clase
         df_ngrams = pd.DataFrame([("-".join(ng), freq) for ng, freq in mas_comunes], columns=["4gram_POS", "Frecuencia"])
-        df_ngrams.to_csv(os.path.join(output_dir, f"4gramas_POS_clase_{clase}.csv"), index=False)
+        df_ngrams.to_csv(os.path.join(output_dir, f"4gramas_POS_clase_{clase}_filtrado.csv"), index=False)
 
     return resultados

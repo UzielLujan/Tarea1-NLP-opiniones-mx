@@ -5,9 +5,9 @@ from nltk.corpus import stopwords
 from src.preprocessing.limpieza import limpiar_corpus
 from src.analysis.estadisticas import generar_estadisticas
 from src.analysis.zipf import analizar_zipf
-from src.analysis.palabras_y_pos import palabras_frecuentes_por_clase, pos_4gramas_por_clase
-from src.features.bow import construir_bow_tfidf
-from src.features.feature_selection import seleccionar_caracteristicas
+from src.analysis.palabras_y_pos import palabras_frecuentes_por_clase,pos_4gramas_global , pos_4gramas_por_clase
+from src.representaciones.bow import construir_bow_tfidf
+from src.representaciones.feature_selection import seleccionar_caracteristicas
 from src.embeddings.word2vec import entrenar_word2vec, analogias
 from src.embeddings.doc_embeddings import calcular_doc_embeddings
 from src.clustering.kmeans import clusterizar_documentos
@@ -24,7 +24,8 @@ def main():
     parser.add_argument("--estadisticas", action="store_true")
     parser.add_argument("--zipf", action="store_true")
     parser.add_argument("--frecuentes", action="store_true")
-    parser.add_argument("--pos", action="store_true")
+    parser.add_argument("--pos_global", action="store_true")
+    parser.add_argument("--pos_clase", action="store_true")
     parser.add_argument("--bow", action="store_true")
     parser.add_argument("--seleccion", action="store_true")
     parser.add_argument("--word2vec", action="store_true")
@@ -70,7 +71,10 @@ def main():
     if args.frecuentes:
         palabras_frecuentes_por_clase(corpus)
 
-    if args.pos:
+    if args.pos_global:
+        pos_4gramas_global(corpus)
+
+    if args.pos_clase:
         pos_4gramas_por_clase(corpus)
 
     if args.bow:
