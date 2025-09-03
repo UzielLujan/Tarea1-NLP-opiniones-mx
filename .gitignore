@@ -11,7 +11,8 @@ build/
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
-
+# Notebooks
+.ipynb
 # Entornos virtuales
 .venv/
 env/
