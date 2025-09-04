@@ -2,7 +2,7 @@
 
 import pandas as pd
 import nltk
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec # type: ignore
 import os
 import pickle
 

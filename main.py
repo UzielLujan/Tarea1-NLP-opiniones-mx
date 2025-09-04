@@ -2,7 +2,7 @@ import argparse
 import os
 from nltk.corpus import stopwords
 
-from src.preprocessing.limpieza import limpiar_corpus
+from src.preprocessing.limpieza import leer_corpus
 from src.analysis.estadisticas import generar_estadisticas
 from src.analysis.zipf import analizar_zipf
 from src.analysis.palabras_y_pos import palabras_frecuentes_por_clase,pos_4gramas_global , pos_4gramas_por_clase
@@ -100,8 +100,11 @@ def main():
         analogias(model_w2v)
 
     if args.cluster:
-        embeddings = calcular_doc_embeddings(corpus, model_w2v)
-        clusterizar_documentos(embeddings, corpus)
+        if 'model_w2v' not in globals():
+            print("⚠️ Debes entrenar Word2Vec antes de clusterizar documentos.")
+        else:
+            embeddings = calcular_doc_embeddings(corpus, model_w2v)
+            clusterizar_documentos(embeddings, corpus)
 
     if args.clasificacion:
         preprocesamientos = [
