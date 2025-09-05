@@ -9,14 +9,11 @@ import os
 import scipy.stats
 nltk.download('punkt', quiet=True)
 
-def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=True, stopwords_set=None, top_n=None):
+def analizar_zipf(df: pd.DataFrame, columna_texto="Review", top_n=None):
     print("\n📈 Analizando la Ley de Zipf...")
 
     # Tokenización con NLTK
     tokens = df[columna_texto].apply(lambda x: nltk.word_tokenize(str(x), language='spanish')).explode()
-
-    if eliminar_stopwords and stopwords_set:
-        tokens = tokens[~tokens.str.lower().isin(stopwords_set)]
 
     # Conteo de frecuencias
     frecuencia = Counter(tokens)
@@ -61,7 +58,7 @@ def analizar_zipf(df: pd.DataFrame, columna_texto="Review", eliminar_stopwords=T
 
     output_dir = os.path.join("reports", "figures")
     os.makedirs(output_dir, exist_ok=True)
-    suffix = "sin_stopwords" if eliminar_stopwords else "con_stopwords"
+    suffix = "sin_stopwords" if top_n else "con_stopwords"
     if top_n:
         suffix += f"_top{top_n}"
     filename = f"zipf_plot_{suffix}.png"
