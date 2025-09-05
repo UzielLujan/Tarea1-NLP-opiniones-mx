@@ -14,7 +14,13 @@ nltk.download('stopwords', quiet=True)
 nlp = spacy.load("es_core_news_sm")
 stopwords_es = set(stopwords.words('spanish'))
 
-def palabras_frecuentes_por_clase(df: pd.DataFrame, columna_texto="Review", columna_clase="Polarity", top_n=15):
+def palabras_frecuentes_por_clase(
+    df: pd.DataFrame,
+    columna_texto="Review",
+    columna_clase="Polarity",
+    top_n=15,
+    custom_words=None
+):
     print("\n📝 Palabras más frecuentes por clase (sin stopwords y texto normalizado):")
 
     clases = df[columna_clase].unique()
@@ -22,33 +28,31 @@ def palabras_frecuentes_por_clase(df: pd.DataFrame, columna_texto="Review", colu
     output_dir = os.path.join("reports", "statistics")
     os.makedirs(output_dir, exist_ok=True)
 
+    # Primer análisis: sin filtrado extra
     for clase in sorted(clases):
         subset = df[df[columna_clase] == clase]
         tokens = subset[columna_texto].apply(lambda x: nltk.word_tokenize(str(x), language='spanish')).explode()
-        tokens_filtrados = tokens[~tokens.str.lower().isin(stopwords_es)]
-        mas_comunes = Counter(tokens_filtrados).most_common(top_n)
+        mas_comunes = Counter(tokens).most_common(top_n)
         resultados[clase] = mas_comunes
         print(f"\nClase {clase}:")
         for palabra, freq in mas_comunes:
             print(f"- {palabra}: {freq}")
 
-    print('\nLas palabras mas frecuentes por clase parecen no ser discriminativas.')
-    print('Quitamos manualmente las palabras más frecuentes en todo el corpus.')
-    custom_stopwords = {'hotel', 'restaurante', 'lugar', 'playa', 'comida', 'servicio','si','habitación','habitaciones'}
-    stopwords_es.update(custom_stopwords)
-
-    for clase in sorted(clases):
-        subset = df[df[columna_clase] == clase]
-        tokens = subset[columna_texto].apply(lambda x: nltk.word_tokenize(str(x), language='spanish')).explode()
-        tokens_filtrados = tokens[~tokens.str.lower().isin(stopwords_es)]
-        mas_comunes = Counter(tokens_filtrados).most_common(top_n)
-        resultados[clase] = mas_comunes
-        print(f"\nClase {clase}:")
-        for palabra, freq in mas_comunes:
-            print(f"- {palabra}: {freq}")
-        # Guardar CSV por clase
-        df_palabras = pd.DataFrame(mas_comunes, columns=["Palabra", "Frecuencia"])
-        df_palabras.to_csv(os.path.join(output_dir, f"palabras_frecuentes_clase_{clase}.csv"), index=False)
+    # Segundo análisis: filtrando custom_words si se pasan
+    if custom_words is not None:
+        print('\nQuitamos manualmente las palabras más frecuentes en todo el corpus (custom words).')
+        for clase in sorted(clases):
+            subset = df[df[columna_clase] == clase]
+            tokens = subset[columna_texto].apply(lambda x: nltk.word_tokenize(str(x), language='spanish')).explode()
+            tokens_filtrados = tokens[~tokens.str.lower().isin(custom_words)]
+            mas_comunes = Counter(tokens_filtrados).most_common(top_n)
+            resultados[f"{clase}_filtrado"] = mas_comunes
+            print(f"\nClase {clase} (filtrado):")
+            for palabra, freq in mas_comunes:
+                print(f"- {palabra}: {freq}")
+            # Guardar CSV por clase
+            df_palabras = pd.DataFrame(mas_comunes, columns=["Palabra", "Frecuencia"])
+            df_palabras.to_csv(os.path.join(output_dir, f"palabras_frecuentes_clase_{clase}_filtrado.csv"), index=False)
 
     return resultados
 

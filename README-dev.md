@@ -1,34 +1,63 @@
 # 🧠 Contexto: Tarea 1 - NLP (Maestría en Cómputo Científico)
 
-Este documento resume el estado actual del proyecto para la **Tarea 1 del curso Análisis de Texto e Imágenes con Deep Learning**.
+Este documento describe el pipeline actualizado y las decisiones de diseño para la **Tarea 1 del curso Análisis de Texto e Imágenes con Deep Learning**.
 
 ---
 
-## 📦 Estructura modular
+## 📦 Estructura modular y flujo de procesamiento
 
-- `src/` organizado por módulos:
-  - `preprocessing/limpieza.py`: limpieza configurable por parámetros
-  - `analysis/`: Zipf, estadísticas, palabras frecuentes, POS
-  - `representaciones/`: BoW, TF-IDF, selección de características
-  - `embeddings/`: Word2Vec, embeddings promedio
-  - `clustering/`: KMeans con análisis de centroides
-  - `modeling/`: clasificación supervisada
-  - `topics/`: LSA y términos por tópico
-  - `visualization/`: distribución de clases, nubes de palabras, gráficas de barras
-- `main.py` usa `argparse` para ejecutar cada bloque por separado
-- `data/` y `reports/` organizados para guardar salidas (.csv, .png, .npy, etc.)
-- `environment.yml` especifica dependencias exactas (Python 3.10, etc)
+- **Preprocesamiento flexible:**  
+  - `src/preprocessing/limpieza.py` ahora separa la lectura básica (`leer_corpus`) del procesamiento avanzado (`procesar_corpus`).
+  - El corpus se lee una sola vez y se procesa solo con el nivel de limpieza requerido por cada módulo.
+  - Los pasos de limpieza avanzados (normalización, stopwords, lematización/stemming) se controlan por parámetros.
+
+- **Módulos independientes y eficientes:**  
+  - Cada módulo (`analysis/`, `representaciones/`, `embeddings/`, `clustering/`, `modeling/`, `topics/`) recibe el corpus ya procesado según sus necesidades.
+  - No hay doble procesamiento ni redundancias.
+  - El pipeline es fácil de mantener y permite experimentar con variantes de limpieza sin modificar los módulos internos.
+
+- **main.py como orquestador:**  
+  - Usa `argparse` para ejecutar cada bloque por separado o el pipeline completo.
+  - Solo procesa el corpus con el nivel de limpieza necesario para cada experimento.
+  - Ejemplo de flujo:
+    - Estadísticas: corpus solo con limpieza básica.
+    - Zipf: corpus con o sin stopwords según argumento.
+    - Palabras frecuentes/POS: corpus normalizado y sin stopwords.
+    - BoW/TF-IDF/Word2Vec: corpus normalizado y sin stopwords.
+    - Clasificación: variantes acumulativas de procesamiento (sin preprocesamiento, minúsculas, lematización, etc.).
+    - LSA: usa la matriz TF-IDF generada.
+
+- **Persistencia y salidas organizadas:**  
+  - `data/` y `reports/` organizados para guardar salidas (.csv, .png, .npy, etc.).
+  - Vectorizadores, embeddings y resultados de clustering/modelado se guardan para análisis posterior.
 
 ---
 
-## 🧪 Entorno
+## 🧪 Entorno y dependencias
 
-- Librerías clave:
+- **Librerías clave:**  
   - `nltk`, `spacy`, `scikit-learn`, `gensim`, `matplotlib`, `seaborn`, `wordcloud`
-- Modelo `es_core_news_sm` instalado correctamente
-- Conflictos resueltos:
-  - OpenMP (`libiomp5md.dll`) usando `KMP_DUPLICATE_LIB_OK=TRUE`
-  - `dtype` conflict entre `numpy` y `scikit-learn`
+- **Modelo spaCy:**  
+  - `es_core_news_sm` instalado y cargado solo una vez.
+- **Compatibilidad:**  
+  - Python 3.10, conflictos de dependencias resueltos.
+  - OpenMP (`libiomp5md.dll`) y conflictos `dtype` entre `numpy` y `scikit-learn` documentados y resueltos.
+
+---
+
+## 🛠️ Ejecución y ejemplos de uso
+
+```bash
+python main.py --zipf --sin_stopwords --top_n 100
+python main.py --frecuentes
+python main.py --bow --ngram_max 2 --min_df 10
+python main.py --word2vec --cluster
+python main.py --clasificacion
+python main.py --lsa
+```
+
+- Puedes combinar flags para ejecutar varios módulos en una sola corrida.
+- El pipeline completo se ejecuta con `--pipeline_completo`.
 
 ---
 
@@ -42,25 +71,28 @@ Este documento resume el estado actual del proyecto para la **Tarea 1 del curso 
 
 ---
 
-## 🛠️ Comandos útiles con argparse
+## 🔍 Decisiones de diseño y mejores prácticas
 
-```bash
-python main.py --zipf --sin_stopwords --top_n 100
-python main.py --frecuentes --pos
-python main.py --bow --ngram_max 2 --min_df 10
-python main.py --word2vec --cluster
-python main.py --clasificacion
-python main.py --lsa
-```
-
----
-
-## 🔧 Posibles mejoras y pendientes
-
-- Crear `tests/` con `pytest` para validación modular
-- Agregar visualizaciones como `plot_top_n_categorica()`
-- Integrar todo en reporte LaTeX
+- **Separación de lectura y procesamiento:**  
+  Permite máxima flexibilidad y eficiencia, evitando recargas y reprocesamientos innecesarios.
+- **Procesamiento parametrizable:**  
+  Los pasos de limpieza se aplican solo cuando y como se necesitan.
+- **Módulos desacoplados:**  
+  Cada módulo asume que el corpus ya está en el estado requerido.
+- **Facilidad para experimentación:**  
+  Cambiar el nivel de limpieza para cualquier experimento es trivial y no requiere modificar los módulos internos.
+- **Soporte para análisis avanzados:**  
+  Filtrado de palabras custom en análisis de palabras frecuentes, experimentos acumulativos en clasificación, etc.
 
 ---
 
-Este documento sirve como resumen técnico para continuar, compartir o migrar el proyecto sin perder el contexto original.
+## 🧪 Pendientes y mejoras sugeridas
+
+- Crear `tests/` con `pytest` para validación modular.
+- Agregar visualizaciones adicionales (`plot_top_n_categorica`, etc.).
+- Integrar todo en reporte LaTeX.
+- Mejorar documentación de cada módulo y agregar ejemplos de uso.
+
+---
+
+Este documento sirve como referencia técnica para continuar, compartir o migrar el proyecto sin perder el contexto y las decisiones clave del pipeline.

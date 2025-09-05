@@ -84,7 +84,13 @@ def main():
             stopwords_set=stopwords_es,
             normalizar_texto=True
         )
-        palabras_frecuentes_por_clase(corpus_frec)
+        # Define aquí tus custom stopwords si las quieres usar
+        custom_words = {'hotel', 'restaurante', 'lugar', 'playa', 'comida', 'servicio', 'si', 'habitación', 'habitaciones'}
+        palabras_frecuentes_por_clase(
+            corpus_frec,
+            top_n=args.top_n if args.top_n else 15,
+            custom_words=custom_words  # Quita este argumento si no quieres filtrado extra
+        )
 
     # POS global: normalización y sin stopwords
     if args.pos_global:
