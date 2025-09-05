@@ -2,10 +2,10 @@ import argparse
 import os
 from nltk.corpus import stopwords
 
-from src.preprocessing.limpieza import leer_corpus
+from src.preprocessing.limpieza import leer_corpus, procesar_corpus
 from src.analysis.estadisticas import generar_estadisticas
 from src.analysis.zipf import analizar_zipf
-from src.analysis.palabras_y_pos import palabras_frecuentes_por_clase,pos_4gramas_global , pos_4gramas_por_clase
+from src.analysis.palabras_y_pos import palabras_frecuentes_por_clase, pos_4gramas_global, pos_4gramas_por_clase
 from src.representaciones.bow import construir_bow_tfidf
 from src.representaciones.feature_selection import seleccionar_caracteristicas
 from src.embeddings.word2vec import entrenar_word2vec, analogias
@@ -15,7 +15,6 @@ from src.modeling.train_model import ejecutar_experimentos_clasificacion
 from src.topics.lsa import ejecutar_lsa
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -42,14 +41,17 @@ def main():
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     archivo = "MeIA_2025_train.csv"
-    corpus = limpiar_corpus(base_dir, archivo)
     stopwords_es = set(stopwords.words("spanish"))
+
+    # Leer corpus una sola vez (limpieza básica)
+    corpus = leer_corpus(base_dir, archivo)
 
     if args.pipeline_completo:
         args.estadisticas = True
         args.zipf = True
         args.frecuentes = True
-        args.pos = True
+        args.pos_global = True
+        args.pos_clase = True
         args.bow = True
         args.seleccion = True
         args.word2vec = True
@@ -57,34 +59,69 @@ def main():
         args.clasificacion = True
         args.lsa = True
 
+    # Estadísticas: solo limpieza básica
     if args.estadisticas:
         generar_estadisticas(corpus)
 
+    # Zipf: permite opción con o sin stopwords
     if args.zipf:
+        if args.sin_stopwords:
+            corpus_zipf = procesar_corpus(corpus, eliminar_stop=True, stopwords_set=stopwords_es)
+        else:
+            corpus_zipf = corpus
         analizar_zipf(
-            corpus,
-            eliminar_stopwords=args.sin_stopwords,
+            corpus_zipf,
+            eliminar_stopwords=False,  # Ya procesado si corresponde
             stopwords_set=stopwords_es,
             top_n=args.top_n
         )
 
+    # Palabras frecuentes por clase: normalización y sin stopwords
     if args.frecuentes:
-        palabras_frecuentes_por_clase(corpus)
+        corpus_frec = procesar_corpus(
+            corpus,
+            eliminar_stop=True,
+            stopwords_set=stopwords_es,
+            normalizar_texto=True
+        )
+        palabras_frecuentes_por_clase(corpus_frec)
 
+    # POS global: normalización y sin stopwords
     if args.pos_global:
-        pos_4gramas_global(corpus)
+        corpus_pos = procesar_corpus(
+            corpus,
+            eliminar_stop=True,
+            stopwords_set=stopwords_es,
+            normalizar_texto=True
+        )
+        pos_4gramas_global(corpus_pos)
 
+    # POS por clase: normalización y sin stopwords
     if args.pos_clase:
-        pos_4gramas_por_clase(corpus)
+        corpus_pos = procesar_corpus(
+            corpus,
+            eliminar_stop=True,
+            stopwords_set=stopwords_es,
+            normalizar_texto=True
+        )
+        pos_4gramas_por_clase(corpus_pos)
 
+    # BoW y TF-IDF: normalización y sin stopwords
     if args.bow:
         global bow, tfidf, vec_bow, vec_tfidf
-        bow, tfidf, vec_bow, vec_tfidf = construir_bow_tfidf(
+        corpus_bow = procesar_corpus(
             corpus,
+            eliminar_stop=True,
+            stopwords_set=stopwords_es,
+            normalizar_texto=True
+        )
+        bow, tfidf, vec_bow, vec_tfidf = construir_bow_tfidf(
+            corpus_bow,
             ngram_range=(1, args.ngram_max),
             min_df=args.min_df
         )
 
+    # Selección de características: usa el corpus y matrices generadas en BoW
     if args.seleccion:
         seleccionar_caracteristicas(
             bow_matrix=bow,
@@ -94,11 +131,19 @@ def main():
             vectorizer_tfidf=vec_tfidf
         )
 
+    # Word2Vec: normalización y sin stopwords
     if args.word2vec:
         global model_w2v
-        model_w2v = entrenar_word2vec(corpus)
+        corpus_w2v = procesar_corpus(
+            corpus,
+            eliminar_stop=True,
+            stopwords_set=stopwords_es,
+            normalizar_texto=True
+        )
+        model_w2v = entrenar_word2vec(corpus_w2v)
         analogias(model_w2v)
 
+    # Clustering: requiere embeddings y modelo Word2Vec entrenado
     if args.cluster:
         if 'model_w2v' not in globals():
             print("⚠️ Debes entrenar Word2Vec antes de clusterizar documentos.")
@@ -106,16 +151,56 @@ def main():
             embeddings = calcular_doc_embeddings(corpus, model_w2v)
             clusterizar_documentos(embeddings, corpus)
 
+    # Clasificación: experimentos acumulativos con diferentes niveles de procesamiento
     if args.clasificacion:
-        preprocesamientos = [
-            {"descripcion": "BoW sin preprocesamiento", "vectorizer": CountVectorizer()},
-            {"descripcion": "TF-IDF min_df=10", "vectorizer": TfidfVectorizer(min_df=10)},
+        experimentos = [
+            {
+                "descripcion": "Sin preprocesamiento",
+                "corpus": corpus,
+                "normalizar_texto": False,
+                "lematizar_stem": False,
+                "eliminar_stop": False,
+                "metodo_lematizar": "lematizar",
+                "vectorizer": CountVectorizer()
+            },
+            {
+                "descripcion": "Con minúsculas",
+                "corpus": procesar_corpus(corpus, normalizar_texto=True),
+                "normalizar_texto": True,
+                "lematizar_stem": False,
+                "eliminar_stop": False,
+                "metodo_lematizar": "lematizar",
+                "vectorizer": CountVectorizer(lowercase=True)
+            },
+            {
+                "descripcion": "Con minúsculas y lematización",
+                "corpus": procesar_corpus(corpus, normalizar_texto=True, lematizar_stem=True, metodo_lematizar="lematizar"),
+                "normalizar_texto": True,
+                "lematizar_stem": True,
+                "eliminar_stop": False,
+                "metodo_lematizar": "lematizar",
+                "vectorizer": CountVectorizer(lowercase=True)
+            },
+            {
+                "descripcion": "Con minúsculas, lematización y min_df=10",
+                "corpus": procesar_corpus(corpus, normalizar_texto=True, lematizar_stem=True, metodo_lematizar="lematizar"),
+                "normalizar_texto": True,
+                "lematizar_stem": True,
+                "eliminar_stop": False,
+                "metodo_lematizar": "lematizar",
+                "vectorizer": CountVectorizer(lowercase=True, min_df=10)
+            }
         ]
-        ejecutar_experimentos_clasificacion(corpus, preprocesamientos=preprocesamientos)
+        for exp in experimentos:
+            print(f"\nEjecutando experimento: {exp['descripcion']}")
+            ejecutar_experimentos_clasificacion(
+                exp["corpus"],
+                preprocesamientos=[{"vectorizer": exp["vectorizer"]}]
+            )
 
+    # LSA: usa la matriz tfidf generada en BoW
     if args.lsa:
         ejecutar_lsa(tfidf_matrix=tfidf, vectorizer_tfidf=vec_tfidf)
-
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,31 @@
 import pandas as pd
 import re 
 import os
+import spacy #type: ignore
+from nltk.stem import SnowballStemmer
+
+# Carga spaCy solo una vez
+try:
+    nlp = spacy.load("es_core_news_sm")
+except Exception:
+    nlp = None
+    print("spaCy 'es_core_news_sm' no está instalado.")
+
+stemmer = SnowballStemmer("spanish")
+
+def lematizar_o_stem(texto, metodo='lematizar'):
+    """
+    Aplica lematización (spaCy) o stemming (NLTK) al texto.
+    metodo: "lematizar", "stem", o None
+    """
+    if metodo == "lematizar" and nlp is not None:
+        doc = nlp(texto)
+        return " ".join([token.lemma_ for token in doc])
+    elif metodo == "stem":
+        palabras = texto.split()
+        return " ".join([stemmer.stem(p) for p in palabras])
+    else:
+        return texto
 
 def reemplazar_mojibake_comun(texto):
     reemplazos = {
@@ -41,23 +66,15 @@ def fix_mojibake(texto):
 
 def limpiar_mojibake_ftfy(texto):
     try:
-        import ftfy
+        import ftfy #type: ignore
         return ftfy.fix_text(texto)
     except ImportError:
-        print("ftfy no está instalado. Usando limpieza manual.")
-        return limpiar_mojibake_manual(texto)
+        print("ftfy no está instalado. Regresando texto original.")
+        return texto
 
 
-def normalizar(texto):
-    # Eliminar puntos, comas y signos de puntuación
-    texto = re.sub(r'[^\w\s]', '', texto)
-    # Eliminar digitos
-    texto = re.sub(r'\d+', '', texto)
-    # Convertir a minúsculas
-    texto = texto.lower()
-    return texto.strip()
 
-def limpiar_corpus(texto, metodo='ftfy'):
+def limpieza_basica(texto, metodo='ftfy'):
     # Reemplazar saltos de línea por espacios
     texto = texto.replace('\n', ' ')
     # Eliminar múltiples espacios
@@ -70,15 +87,51 @@ def limpiar_corpus(texto, metodo='ftfy'):
     else:
         texto = reemplazar_mojibake_comun(texto)
         texto = fix_mojibake(texto)
-
     return texto
+
+
+
+def normalizar(texto):
+    # Eliminar puntos, comas y signos de puntuación
+    texto = re.sub(r'[^\w\s]', '', texto)
+    # Eliminar digitos
+    texto = re.sub(r'\d+', '', texto)
+    # Convertir a minúsculas
+    texto = texto.lower()
+    return texto.strip()
+
+def eliminar_stopwords(texto, stopwords_set):
+    palabras = texto.split()
+    return ' '.join([p for p in palabras if p not in stopwords_set])
+
+
+def procesar_corpus(
+    df,
+    eliminar_stop=False,
+    stopwords_set=None,
+    normalizar_texto=False,
+    lematizar_stem=False,
+    metodo_lematizar='lematizar'
+):
+    df = df.copy()
+    def procesar(texto):
+        t = texto
+        if normalizar_texto:
+            t = normalizar(t)
+        if eliminar_stop and stopwords_set is not None:
+            t = eliminar_stopwords(t, stopwords_set)
+        if lematizar_stem:
+            t = lematizar_o_stem(t, metodo=metodo_lematizar)
+        return t
+    df['Review'] = df['Review'].astype(str).apply(procesar)
+    return df
+
 
 def leer_corpus(ruta, archivo, metodo='ftfy'):
     data_path = os.path.join(ruta, "data", "raw", archivo)
-    print('\n',f'Cargando corpus desde: {data_path}...')
+    print('\n', f'Cargando corpus desde: {data_path}...')
     corpus = pd.read_csv(data_path, encoding="utf-8")
-    print('Corpus cargado. Realizando limpieza...')
-    # Limpiar el texto en la columna 'Review'
-    corpus['Review'] = corpus['Review'].apply(limpiar_corpus, metodo=metodo)
+    print('Corpus cargado. Realizando limpieza básica...')
+    corpus['Review'] = corpus['Review'].astype(str).apply(lambda x: limpieza_basica(x, metodo=metodo))
     corpus['Polarity'] = corpus['Polarity'].astype(int)
     return corpus
