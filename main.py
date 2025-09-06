@@ -54,7 +54,7 @@ def main():
     archivo = "MeIA_2025_train.csv"
     stopwords_es = set(stopwords.words("spanish"))
 
-    # Leer corpus una sola vez (limpieza básica)
+    # 0. Leer corpus una sola vez (limpieza básica)
     corpus = leer_corpus(base_dir, archivo, metodo='ftfy')
 
     if args.pipeline_completo:
@@ -70,7 +70,7 @@ def main():
         args.clasificacion = True
         args.lsa = True
 
-    # Estadísticas: solo limpieza básica
+    # 1. Estadísticas y Descripcion del corpus: solo limpieza básica
     if args.estadisticas:
         generar_estadisticas(corpus)
 
@@ -78,23 +78,13 @@ def main():
     if args.plot_distribucion:
         plot_distribucion_clases(corpus, columna_clase="Polarity")
 
-    # Palabras frecuentes por clase
-    if args.plot_palabras_frecuentes and args.frecuentes:
-        # Asegúrate de guardar el resultado de palabras_frecuentes_por_clase
-        resultados_palabras = palabras_frecuentes_por_clase(
-            corpus_frec,
-            top_n=args.top_n if args.top_n else 15,
-            custom_words=custom_words
-        )
-        plot_palabras_frecuentes_por_clase(resultados_palabras)
-
     # Nube de palabras (puedes usar tokens de todo el corpus o por clase)
     if args.nube_palabras:
         # Ejemplo: nube de palabras de todo el corpus normalizado
         tokens = corpus_frec["Review"].str.split().explode().tolist()
         generar_nube_palabras(tokens)
 
-    # Zipf: permite opción con o sin stopwords y con o sin hapax, siempre normalizando
+    # 2. Zipf: permite opción con o sin stopwords y con o sin hapax, siempre normalizando
     if args.zipf:
         corpus_zipf = procesar_corpus(
             corpus,
@@ -109,7 +99,7 @@ def main():
             quitar_hapax=args.sin_hapax
         )
 
-    # Palabras frecuentes por clase: normalización y sin stopwords
+    # 3. Palabras frecuentes por clase: normalización y sin stopwords
     if args.frecuentes:
         corpus_frec = procesar_corpus(
             corpus,
@@ -124,8 +114,18 @@ def main():
             top_n=args.top_n if args.top_n else 15,
             custom_words=custom_words  # Quita este argumento si no quieres filtrado extra
         )
+    
+    # Palabras frecuentes por clase
+    if args.plot_palabras_frecuentes and args.frecuentes:
+        # Asegúrate de guardar el resultado de palabras_frecuentes_por_clase
+        resultados_palabras = palabras_frecuentes_por_clase(
+            corpus_frec,
+            top_n=args.top_n if args.top_n else 15,
+            custom_words=custom_words
+        )
+        plot_palabras_frecuentes_por_clase(resultados_palabras)
 
-    # POS global: normalización y sin stopwords
+    # 4. POS global: normalización y sin stopwords
     if args.pos_global:
         corpus_pos = procesar_corpus(
             corpus,
@@ -135,7 +135,7 @@ def main():
         )
         pos_4gramas_global(corpus_pos)
 
-    # POS por clase: normalización y sin stopwords
+    # 4. POS por clase: normalización y sin stopwords
     if args.pos_clase:
         corpus_pos = procesar_corpus(
             corpus,
@@ -145,7 +145,7 @@ def main():
         )
         pos_4gramas_por_clase(corpus_pos)
 
-    # BoW y TF-IDF: normalización y sin stopwords
+    # 5. BoW y TF-IDF: normalización y sin stopwords
     if args.bow:
         global bow, tfidf, vec_bow, vec_tfidf
         corpus_bow = procesar_corpus(

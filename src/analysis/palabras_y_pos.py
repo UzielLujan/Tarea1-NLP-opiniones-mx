@@ -37,6 +37,9 @@ def palabras_frecuentes_por_clase(
         print(f"\nClase {clase}:")
         for palabra, freq in mas_comunes:
             print(f"- {palabra}: {freq}")
+        # Guardar CSV por clase
+        df_palabras = pd.DataFrame(mas_comunes, columns=["Palabra", "Frecuencia"])
+        df_palabras.to_csv(os.path.join(output_dir, f"palabras_frecuentes_clase_{clase}.csv"), index=False)
 
     # Segundo análisis: filtrando custom_words si se pasan
     if custom_words is not None:

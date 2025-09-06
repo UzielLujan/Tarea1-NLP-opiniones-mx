@@ -49,9 +49,9 @@ def plot_palabras_frecuentes_por_clase(diccionario_palabras, output_dir="reports
         ax.set_xlabel("Frecuencia", fontsize=12)
         ax.set_ylabel("Palabra", fontsize=12)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, f"top_palabras_clase_{clase}.png"))
-        plt.close()
+        plt.savefig(os.path.join(output_dir, f"top_palabras_clase_{clase}.png"), dpi=300)
         print(f"- Gráfica de palabras frecuentes clase {clase} guardada")
+        plt.close()
 
 def generar_nube_palabras(lista_tokens, output_path="reports/figures/nube_palabras.png", titulo="Nube de palabras"):
     texto = " ".join(lista_tokens)
