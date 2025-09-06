@@ -9,11 +9,17 @@ import os
 import scipy.stats
 nltk.download('punkt', quiet=True)
 
-def analizar_zipf(df: pd.DataFrame, columna_texto="Review", top_n=None):
+def analizar_zipf(df: pd.DataFrame, columna_texto="Review", stopws=False, top_n=None, quitar_hapax=False):
     print("\n📈 Analizando la Ley de Zipf...")
 
     # Tokenización con NLTK
     tokens = df[columna_texto].apply(lambda x: nltk.word_tokenize(str(x), language='spanish')).explode()
+    # Quitar hapax legomena si se solicita
+    if quitar_hapax:
+        conteo = Counter(tokens)
+        hapax = {palabra for palabra, freq in conteo.items() if freq == 1}
+        tokens = tokens[~tokens.isin(hapax)]
+
 
     # Conteo de frecuencias
     frecuencia = Counter(tokens)
@@ -51,17 +57,28 @@ def analizar_zipf(df: pd.DataFrame, columna_texto="Review", top_n=None):
     plt.scatter(log_rangos_fit, log_frecuencias_fit, label='Datos reales', alpha=0.7)
     plt.plot(log_rangos_fit, pendiente * log_rangos_fit + interseccion, color='red', linestyle='--', label='Ajuste lineal')
     plt.title("Ley de Zipf - log(Rango) vs log(Frecuencia)")
-    plt.xlabel("log10(Rango)")
-    plt.ylabel("log10(Frecuencia)")
+    plt.xlabel("log(Rango)")
+    plt.ylabel("log(Frecuencia)")
     plt.legend()
     plt.grid(True)
 
     output_dir = os.path.join("reports", "figures")
     os.makedirs(output_dir, exist_ok=True)
-    suffix = "sin_stopwords" if top_n else "con_stopwords"
+
+    # Construye el sufijo según las combinaciones
+    if stopws and quitar_hapax:
+        suffix = "sin_stopw_sin_hapax"
+    elif stopws and not quitar_hapax:
+        suffix = "sin_stopw_con_hapax"
+    elif not stopws and quitar_hapax:
+        suffix = "con_stopw_sin_hapax"
+    else:
+        suffix = "con_stopw_con_hapax"
+
     if top_n:
         suffix += f"_top{top_n}"
-    filename = f"zipf_plot_{suffix}.png"
+
+    filename = f"zipf_{suffix}.png"
     output_path = os.path.join(output_dir, filename)
     plt.savefig(output_path, dpi=300)
     print(f"- Gráfica guardada en {output_path}")

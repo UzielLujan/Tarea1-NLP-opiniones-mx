@@ -129,9 +129,8 @@ def procesar_corpus(
 
 def leer_corpus(ruta, archivo, metodo='ftfy'):
     data_path = os.path.join(ruta, "data", "raw", archivo)
-    print('\n', f'Cargando corpus desde: {data_path}...')
     corpus = pd.read_csv(data_path, encoding="utf-8")
-    print('Corpus cargado. Realizando limpieza básica...')
+    print('\n Corpus cargado. Realizando limpieza básica...')
     corpus['Review'] = corpus['Review'].astype(str).apply(lambda x: limpieza_basica(x, metodo=metodo))
     corpus['Polarity'] = corpus['Polarity'].astype(int)
     return corpus

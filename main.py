@@ -1,4 +1,5 @@
 import argparse
+from email import parser
 import os
 from nltk.corpus import stopwords
 
@@ -13,12 +14,17 @@ from src.embeddings.doc_embeddings import calcular_doc_embeddings
 from src.clustering.kmeans import clusterizar_documentos
 from src.modeling.train_model import ejecutar_experimentos_clasificacion
 from src.topics.lsa import ejecutar_lsa
+from src.visualization.visualizations import (
+    plot_distribucion_clases,
+    plot_palabras_frecuentes_por_clase,
+    generar_nube_palabras
+)
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 def main():
     parser = argparse.ArgumentParser()
-
+    # Argumentos para seleccionar qué partes del pipeline ejecutar
     parser.add_argument("--pipeline_completo", action="store_true")
     parser.add_argument("--estadisticas", action="store_true")
     parser.add_argument("--zipf", action="store_true")
@@ -31,11 +37,16 @@ def main():
     parser.add_argument("--cluster", action="store_true")
     parser.add_argument("--clasificacion", action="store_true")
     parser.add_argument("--lsa", action="store_true")
-
-    parser.add_argument("--top_n", type=int, default=None)
+    # Argumentos adicionales para análisis específicos
     parser.add_argument("--sin_stopwords", action="store_true")
+    parser.add_argument("--sin_hapax", action="store_true")
+    parser.add_argument("--top_n", type=int, default=None)
     parser.add_argument("--min_df", type=int, default=1)
     parser.add_argument("--ngram_max", type=int, default=1)
+    # Argumentos para visualizaciones
+    parser.add_argument("--plot_distribucion", action="store_true")
+    parser.add_argument("--plot_palabras_frecuentes", action="store_true")
+    parser.add_argument("--nube_palabras", action="store_true")
 
     args = parser.parse_args()
 
@@ -44,7 +55,7 @@ def main():
     stopwords_es = set(stopwords.words("spanish"))
 
     # Leer corpus una sola vez (limpieza básica)
-    corpus = leer_corpus(base_dir, archivo)
+    corpus = leer_corpus(base_dir, archivo, metodo='ftfy')
 
     if args.pipeline_completo:
         args.estadisticas = True
@@ -63,17 +74,39 @@ def main():
     if args.estadisticas:
         generar_estadisticas(corpus)
 
-    # Zipf: permite opción con o sin stopwords
+    # Distribución de clases
+    if args.plot_distribucion:
+        plot_distribucion_clases(corpus, columna_clase="Polarity")
+
+    # Palabras frecuentes por clase
+    if args.plot_palabras_frecuentes and args.frecuentes:
+        # Asegúrate de guardar el resultado de palabras_frecuentes_por_clase
+        resultados_palabras = palabras_frecuentes_por_clase(
+            corpus_frec,
+            top_n=args.top_n if args.top_n else 15,
+            custom_words=custom_words
+        )
+        plot_palabras_frecuentes_por_clase(resultados_palabras)
+
+    # Nube de palabras (puedes usar tokens de todo el corpus o por clase)
+    if args.nube_palabras:
+        # Ejemplo: nube de palabras de todo el corpus normalizado
+        tokens = corpus_frec["Review"].str.split().explode().tolist()
+        generar_nube_palabras(tokens)
+
+    # Zipf: permite opción con o sin stopwords y con o sin hapax, siempre normalizando
     if args.zipf:
-        if args.sin_stopwords:
-            corpus_zipf = procesar_corpus(corpus, eliminar_stop=True, stopwords_set=stopwords_es)
-        else:
-            corpus_zipf = corpus
+        corpus_zipf = procesar_corpus(
+            corpus,
+            eliminar_stop=args.sin_stopwords,
+            stopwords_set=stopwords_es if args.sin_stopwords else None,
+            normalizar_texto=True
+        )
         analizar_zipf(
             corpus_zipf,
-            eliminar_stopwords=False,  # Ya procesado si corresponde
-            stopwords_set=stopwords_es,
-            top_n=args.top_n
+            stopws=args.sin_stopwords,
+            top_n=args.top_n,
+            quitar_hapax=args.sin_hapax
         )
 
     # Palabras frecuentes por clase: normalización y sin stopwords
