@@ -114,8 +114,8 @@ def main():
             top_n=args.top_n if args.top_n else 15,
             custom_words=custom_words  # Quita este argumento si no quieres filtrado extra
         )
-    
-    # Palabras frecuentes por clase
+
+    # Gráficas de palabras frecuentes por clase
     if args.plot_palabras_frecuentes and args.frecuentes:
         # Asegúrate de guardar el resultado de palabras_frecuentes_por_clase
         resultados_palabras = palabras_frecuentes_por_clase(

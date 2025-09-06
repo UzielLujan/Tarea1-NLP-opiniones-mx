@@ -42,6 +42,8 @@ def plot_palabras_frecuentes_por_clase(diccionario_palabras, output_dir="reports
         sns.barplot(
             x=list(freqs),
             y=list(palabras),
+            hue =list(palabras),        # Asigna la variable 'y' a hue
+            legend=False,
             palette="Reds",
             ax=ax
         )
