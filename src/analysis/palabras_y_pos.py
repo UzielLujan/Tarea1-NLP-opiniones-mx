@@ -84,7 +84,13 @@ def pos_4gramas_global(df: pd.DataFrame, columna_texto="Review", top_n=10):
 
     return mas_comunes
 
-def pos_4gramas_por_clase(df: pd.DataFrame, columna_texto="Review", columna_clase="Polarity", top_n=5):
+def pos_4gramas_por_clase(
+    df: pd.DataFrame,
+    columna_texto="Review",
+    columna_clase="Polarity",
+    top_n=5,
+    global_4gramas=None
+):
     print("\n🔤 4-gramas gramaticales por clase (filtrando los más frecuentes globales):")
 
     def obtener_4gramas_pos(texto):
@@ -92,26 +98,19 @@ def pos_4gramas_por_clase(df: pd.DataFrame, columna_texto="Review", columna_clas
         tags = [token.pos_ for token in doc]
         return list(zip(*(islice(tags, i, None) for i in range(4))))
 
-    # Lista de 4-gramas POS globales poco discriminantes
-    global_4gramas = {
-        ('NOUN', 'ADP', 'DET', 'NOUN'),
-        ('DET', 'NOUN', 'ADP', 'NOUN'),
-        ('ADP', 'DET', 'NOUN', 'ADP'),
-        ('DET', 'NOUN', 'ADP', 'DET'),
-        ('VERB', 'ADP', 'DET', 'NOUN'),
-        ('VERB', 'DET', 'NOUN', 'ADP'),
-    }
-
     clases = df[columna_clase].unique()
     resultados = {}
-    output_dir = os.path.join("reports", "features")
+    output_dir = os.path.join("reports", "statistics")
     os.makedirs(output_dir, exist_ok=True)
 
     for clase in sorted(clases):
         subset = df[df[columna_clase] == clase]
         ngramas = subset[columna_texto].apply(obtener_4gramas_pos).explode()
         # Filtrar los 4-gramas globales poco discriminantes
-        ngramas_filtrados = ngramas[~ngramas.isin(global_4gramas)]
+        if global_4gramas is not None:
+            ngramas_filtrados = ngramas[~ngramas.isin(global_4gramas)]
+        else:
+            ngramas_filtrados = ngramas
         conteo = Counter(ngramas_filtrados)
         mas_comunes = conteo.most_common(top_n)
         resultados[clase] = mas_comunes

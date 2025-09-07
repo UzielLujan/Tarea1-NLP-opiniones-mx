@@ -78,12 +78,6 @@ def main():
     if args.plot_distribucion:
         plot_distribucion_clases(corpus, columna_clase="Polarity")
 
-    # Nube de palabras (puedes usar tokens de todo el corpus o por clase)
-    if args.nube_palabras:
-        # Ejemplo: nube de palabras de todo el corpus normalizado
-        tokens = corpus_frec["Review"].str.split().explode().tolist()
-        generar_nube_palabras(tokens)
-
     # 2. Zipf: permite opción con o sin stopwords y con o sin hapax, siempre normalizando
     if args.zipf:
         corpus_zipf = procesar_corpus(
@@ -124,6 +118,21 @@ def main():
             custom_words=custom_words
         )
         plot_palabras_frecuentes_por_clase(resultados_palabras)
+    # Nube de palabras general y por clase
+    if args.nube_palabras and args.frecuentes:
+        resultados_palabras = palabras_frecuentes_por_clase(
+            corpus_frec,
+            top_n=args.top_n if args.top_n else 15,
+            custom_words=custom_words
+        )
+        for clase in resultados_palabras:
+            if "filtrado" in str(clase):
+                palabras_filtradas = [palabra for palabra, _ in resultados_palabras[clase]]
+                generar_nube_palabras(
+                    palabras_filtradas,
+                    output_path=f"reports/figures/nube_palabras_{clase}.png",
+                    titulo=f"Nube de palabras Clase {clase.replace('_filtrado', '')}"
+                )
 
     # 4. POS global: normalización y sin stopwords
     if args.pos_global:
@@ -135,7 +144,7 @@ def main():
         )
         pos_4gramas_global(corpus_pos)
 
-    # 4. POS por clase: normalización y sin stopwords
+    # 4. POS por clase: normalización y sin stopwords y filtrado por globales
     if args.pos_clase:
         corpus_pos = procesar_corpus(
             corpus,
@@ -143,7 +152,12 @@ def main():
             stopwords_set=stopwords_es,
             normalizar_texto=True
         )
-        pos_4gramas_por_clase(corpus_pos)
+        top_global_4gramas = pos_4gramas_global(corpus, top_n=5)
+        global_4gramas_set = set([ng for ng, _ in top_global_4gramas])
+        pos_4gramas_por_clase(
+            corpus,
+            global_4gramas=global_4gramas_set
+        )
 
     # 5. BoW y TF-IDF: normalización y sin stopwords
     if args.bow:
