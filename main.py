@@ -183,7 +183,7 @@ def main():
 
     # Selección de características: usa el corpus y matrices generadas en BoW
     if args.seleccion:
-        labels = corpus["Polarity"].astype(int)
+        labels = corpus["Polarity"].astype(int).values
         seleccionar_caracteristicas(
             bow_matrix=bow,
             tfidf_matrix=tfidf,

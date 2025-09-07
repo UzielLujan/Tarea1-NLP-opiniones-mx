@@ -6,7 +6,7 @@ from sklearn.feature_selection import chi2, mutual_info_classif
 import os
 def seleccionar_caracteristicas(bow_matrix, tfidf_matrix, labels, vectorizer_bow, vectorizer_tfidf, top_k=20):
     print("\n🔍 Selección de características...")
-    labels = labels.astype(int).values  # Asegura que las etiquetas sean enteros
+    labels = pd.Series(labels).astype(int).values  # Asegura que labels es un array numpy de enteros
     nombres_bow = np.array(vectorizer_bow.get_feature_names_out())
     nombres_tfidf = np.array(vectorizer_tfidf.get_feature_names_out())
 
