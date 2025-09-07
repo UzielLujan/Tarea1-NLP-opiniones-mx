@@ -6,6 +6,12 @@ from wordcloud import WordCloud # type: ignore
 import os
 import pandas as pd
 
+import numpy as np
+import pickle
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+
 sns.set(style="whitegrid")
 
 def plot_distribucion_clases(df, columna_clase="Polarity", output_path="reports/figures/distribucion_"):
@@ -67,3 +73,43 @@ def generar_nube_palabras(lista_tokens, output_path="reports/figures/nube_palabr
     plt.savefig(output_path)
     plt.close()
     print(f"- Nube de palabras guardada en {output_path}")
+
+
+def cargar_vectores(path, tipo="npy", vectorizer_path=None, df=None, columna_texto="Review", modelo_word2vec=None):
+    if tipo == "npy":
+        return np.load(path)
+    elif tipo == "pkl":
+        # Carga el vectorizer y transforma el texto
+        with open(path, "rb") as f:
+            vectorizer = pickle.load(f)
+        if df is not None:
+            return vectorizer.transform(df[columna_texto]).toarray()
+        else:
+            raise ValueError("Debes pasar el DataFrame para transformar el texto con el vectorizer.")
+    elif tipo == "model":
+        # Usa tu función calcular_doc_embeddings
+        if modelo_word2vec is not None and df is not None:
+            from src.embeddings.doc_embeddings import calcular_doc_embeddings
+            return calcular_doc_embeddings(df, modelo_word2vec)
+        else:
+            raise ValueError("Debes pasar el modelo Word2Vec y el DataFrame.")
+    else:
+        raise ValueError("Tipo de vector no soportado.")
+
+def visualizar_pca(vectores, etiquetas=None, n_components=2, titulo="PCA de representaciones vectoriales", output_path=None):
+    pca = PCA(n_components=n_components)
+    vectores_pca = pca.fit_transform(vectores)
+    plt.figure(figsize=(8, 6))
+    if etiquetas is not None:
+        scatter = plt.scatter(vectores_pca[:, 0], vectores_pca[:, 1], c=etiquetas, cmap="viridis", alpha=0.7)
+        plt.legend(*scatter.legend_elements(), title="Clase")
+    else:
+        plt.scatter(vectores_pca[:, 0], vectores_pca[:, 1], alpha=0.7)
+    plt.title(titulo)
+    plt.xlabel("PC1")
+    plt.ylabel("PC2")
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=300)
+        print(f"- Gráfica PCA guardada en {output_path}")
+    plt.show()

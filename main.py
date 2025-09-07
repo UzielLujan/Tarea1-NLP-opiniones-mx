@@ -2,6 +2,7 @@ import argparse
 from email import parser
 import os
 from nltk.corpus import stopwords
+from gensim.models import Word2Vec # type: ignore
 
 from src.preprocessing.limpieza import leer_corpus, procesar_corpus
 from src.analysis.estadisticas import generar_estadisticas
@@ -17,7 +18,9 @@ from src.topics.lsa import ejecutar_lsa
 from src.visualization.visualizations import (
     plot_distribucion_clases,
     plot_palabras_frecuentes_por_clase,
-    generar_nube_palabras
+    generar_nube_palabras,
+    cargar_vectores,
+    visualizar_pca
 )
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -47,6 +50,10 @@ def main():
     parser.add_argument("--plot_distribucion", action="store_true")
     parser.add_argument("--plot_palabras_frecuentes", action="store_true")
     parser.add_argument("--nube_palabras", action="store_true")
+    parser.add_argument("--pca", action="store_true", help="Visualizar PCA de representaciones vectoriales")
+    parser.add_argument("--pca_tipo", type=str, choices=["npy", "pkl", "model"], help="Tipo de vector: npy, pkl, model")
+    parser.add_argument("--pca_path", type=str, help="Ruta al archivo de vectores (.npy, .pkl, .model)")
+    parser.add_argument("--pca_title", type=str, default="PCA de representaciones vectoriales")
 
     args = parser.parse_args()
 
@@ -176,10 +183,11 @@ def main():
 
     # Selección de características: usa el corpus y matrices generadas en BoW
     if args.seleccion:
+        labels = corpus["Polarity"].astype(int)
         seleccionar_caracteristicas(
             bow_matrix=bow,
             tfidf_matrix=tfidf,
-            labels=corpus["Polarity"],
+            labels=labels,
             vectorizer_bow=vec_bow,
             vectorizer_tfidf=vec_tfidf
         )
@@ -203,6 +211,25 @@ def main():
         else:
             embeddings = calcular_doc_embeddings(corpus, model_w2v)
             clusterizar_documentos(embeddings, corpus)
+
+        # Visualización PCA de representaciones vectoriales
+    if args.pca:
+        if args.pca_tipo == "npy":
+            vectores = cargar_vectores(args.pca_path, tipo="npy")
+        elif args.pca_tipo == "pkl":
+            vectores = cargar_vectores(args.pca_path, tipo="pkl", df=corpus)
+        elif args.pca_tipo == "model":
+            from gensim.models import Word2Vec # type: ignore
+            modelo = Word2Vec.load(args.pca_path)
+            vectores = cargar_vectores(None, tipo="model", modelo_word2vec=modelo, df=corpus)
+        else:
+            raise ValueError("Tipo de vector no soportado para PCA.")
+        visualizar_pca(
+            vectores,
+            etiquetas=corpus["Polarity"],
+            titulo=args.pca_title,
+            output_path="reports/figures/pca_" + args.pca_title + ".png"
+        )
 
     # Clasificación: experimentos acumulativos con diferentes niveles de procesamiento
     if args.clasificacion:
