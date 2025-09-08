@@ -7,7 +7,7 @@ El proyecto forma parte de la **Maestría en Cómputo Estadístico** y cubre des
 
 ---
 
-## 🎯 Objetivo
+## Objetivo
 Aplicar un pipeline integral de NLP para:
 - Analizar y describir corpus en español.
 - Evaluar leyes empíricas del lenguaje (ej. Ley de Zipf).
@@ -29,7 +29,7 @@ Tarea1_NLP-opiniones-mx/
 │── src/                  # Código fuente en módulos
 │   ├── preprocessing/    # Limpieza, stopwords, tokenización, stemming
 │   ├── analysis/         # Estadísticas descriptivas, Ley de Zipf, hapax
-│   ├── features/         # BoW, TF-IDF, bigramas, selección de características
+│   ├── representaciones/ # BoW, TF-IDF, bigramas, selección de características
 │   ├── embeddings/       # Word2Vec, doc embeddings
 │   ├── modeling/         # Clasificación (SVM, Regresión Logística)
 │   ├── clustering/       # K-means, análisis de clústeres
@@ -49,19 +49,28 @@ Tarea1_NLP-opiniones-mx/
 │── main.py               # Script principal que ejecuta el pipeline completo
 
 ```
-## 🛠️ Entorno reproducible
+## Entorno reproducible
 
 Para correr este proyecto localmente, usar el entorno `conda` definido en `environment.yml`.
 
-### 🔁 Crear entorno desde cero
+### Crear entorno desde cero
 
 ```bash
 conda env create -f environment.yml
 conda activate tarea1-nlp
 ```
+## Ejecutar el pipeline completo
+Para ejecutar el pipeline completo, correr:
+```bash
+python main.py --pipeline_completo
+```
 
+## Algunos comandos para ejecutar el pipeline por partes
 
-## 🧪 Ejecutar el pipeline por partes
+0. Estadísticas generales del corpus
+```bash
+python main.py --estadisticas
+```
 
 1. Analizar Ley de Zipf sin stopwords y con top_n=100:
 ```bash
@@ -81,7 +90,20 @@ python main.py --word2vec
 python main.py --bow --min_df 10 --ngram_max 2
 ```
 
-5. Ejecutar solo LSA:
+5. Visualizar representacion vectoriales con PCA
+```bash
+python main.py --pca --pca_tipo pkl --pca_path data/interim/bow_vectorizer.pkl --pca_title "PCA BoW"
+python main.py --pca --pca_tipo pkl --pca_path data/interim/tdidf_vectorizer.pkl --pca_title "PCA TDiDF"
+python main.py --pca --pca_tipo model --pca_path data/interim/word2vec.model --pca_title "PCA Word2Vec"
+python main.py --pca --pca_tipo npy --pca_path data/interim/doc_embeddings.npy --pca_title "PCA Doc Embeddings"
+```
+6. Ejecutar clasificacion (Regresión Logística) con diferentes niveles de preprocesamiento:
+```bash
+python main.py --clasificacion
+``` 
+
+7. Ejecutar solo LSA:
 ```bash
 python main.py --lsa
 ```
+> **Nota:** Para consultar la lista completa de comandos y ejemplos de uso del pipeline por módulos, revisa el archivo [`argparse_commands.md`](./argparse_commands.md).
