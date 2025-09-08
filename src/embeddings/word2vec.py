@@ -8,7 +8,7 @@ import pickle
 
 nltk.download('punkt', quiet=True)
 
-def entrenar_word2vec(df: pd.DataFrame, columna_texto="Review", vector_size=100, window=5, min_count=5, workers=4, sg=1, guardar=True):
+def entrenar_word2vec(df: pd.DataFrame, columna_texto="Review", vector_size=150, window=7, min_count=2, workers=4, sg=1, guardar=True):
     print("\n🧠 Entrenando modelo Word2Vec...")
 
     # Tokenización por documento
@@ -21,7 +21,8 @@ def entrenar_word2vec(df: pd.DataFrame, columna_texto="Review", vector_size=100,
         window=window,
         min_count=min_count,
         workers=workers,
-        sg=sg  # sg=1 -> skip-gram, sg=0 -> CBOW
+        sg=sg,  # sg=1 -> skip-gram, sg=0 -> CBOW
+        epochs=10
     )
 
     if guardar:

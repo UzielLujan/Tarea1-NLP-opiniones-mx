@@ -111,7 +111,8 @@ def procesar_corpus(
     stopwords_set=None,
     normalizar_texto=False,
     lematizar_stem=False,
-    metodo_lematizar='lematizar'
+    metodo_lematizar='lematizar',
+    custom_words=None
 ):
     df = df.copy()
     def procesar(texto):
@@ -120,6 +121,8 @@ def procesar_corpus(
             t = normalizar(t)
         if eliminar_stop and stopwords_set is not None:
             t = eliminar_stopwords(t, stopwords_set)
+        if custom_words is not None:
+            t = ' '.join([w for w in t.split() if w.lower() not in custom_words])
         if lematizar_stem:
             t = lematizar_o_stem(t, metodo=metodo_lematizar)
         return t
@@ -130,7 +133,7 @@ def procesar_corpus(
 def leer_corpus(ruta, archivo, metodo='ftfy'):
     data_path = os.path.join(ruta, "data", "raw", archivo)
     corpus = pd.read_csv(data_path, encoding="utf-8")
-    print('\n Corpus cargado. Realizando limpieza básica...')
+    print('\nCorpus cargado. Realizando limpieza básica...')
     corpus['Review'] = corpus['Review'].astype(str).apply(lambda x: limpieza_basica(x, metodo=metodo))
     corpus['Polarity'] = corpus['Polarity'].astype(int)
     return corpus

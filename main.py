@@ -3,7 +3,8 @@ from email import parser
 import os
 from nltk.corpus import stopwords
 from gensim.models import Word2Vec # type: ignore
-
+import numpy as np
+# Importar módulos personalizados
 from src.preprocessing.limpieza import leer_corpus, procesar_corpus
 from src.analysis.estadisticas import generar_estadisticas
 from src.analysis.zipf import analizar_zipf
@@ -46,6 +47,7 @@ def main():
     parser.add_argument("--top_n", type=int, default=None)
     parser.add_argument("--min_df", type=int, default=1)
     parser.add_argument("--ngram_max", type=int, default=1)
+    parser.add_argument("--custom_words", action="store_true", help="Filtrar palabras personalizadas")
     # Argumentos para visualizaciones
     parser.add_argument("--plot_distribucion", action="store_true")
     parser.add_argument("--plot_palabras_frecuentes", action="store_true")
@@ -60,6 +62,8 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     archivo = "MeIA_2025_train.csv"
     stopwords_es = set(stopwords.words("spanish"))
+    # Palabras detectadas manualmente que no aportan valor semántico a la Polaridad
+    custom_words = {'hotel', 'restaurante', 'lugar', 'playa', 'comida', 'servicio', 'si', 'habitación', 'habitaciones'}
 
     # 0. Leer corpus una sola vez (limpieza básica)
     corpus = leer_corpus(base_dir, archivo, metodo='ftfy')
@@ -108,12 +112,10 @@ def main():
             stopwords_set=stopwords_es,
             normalizar_texto=True
         )
-        # Define aquí tus custom stopwords si las quieres usar
-        custom_words = {'hotel', 'restaurante', 'lugar', 'playa', 'comida', 'servicio', 'si', 'habitación', 'habitaciones'}
         palabras_frecuentes_por_clase(
             corpus_frec,
             top_n=args.top_n if args.top_n else 15,
-            custom_words=custom_words  # Quita este argumento si no quieres filtrado extra
+            custom_words=custom_words  # Aquí se usan las palabras personalizadas definidas arriba
         )
 
     # Gráficas de palabras frecuentes por clase
@@ -173,7 +175,8 @@ def main():
             corpus,
             eliminar_stop=True,
             stopwords_set=stopwords_es,
-            normalizar_texto=True
+            normalizar_texto=True,
+            custom_words=custom_words if args.custom_words else None
         )
         bow, tfidf, vec_bow, vec_tfidf = construir_bow_tfidf(
             corpus_bow,
@@ -199,7 +202,8 @@ def main():
             corpus,
             eliminar_stop=True,
             stopwords_set=stopwords_es,
-            normalizar_texto=True
+            normalizar_texto=True,
+            custom_words=custom_words if args.custom_words else None,
         )
         model_w2v = entrenar_word2vec(corpus_w2v)
         analogias(model_w2v)
@@ -209,10 +213,10 @@ def main():
         if 'model_w2v' not in globals():
             print("⚠️ Debes entrenar Word2Vec antes de clusterizar documentos.")
         else:
-            embeddings = calcular_doc_embeddings(corpus, model_w2v)
-            clusterizar_documentos(embeddings, corpus)
+            embeddings = calcular_doc_embeddings(corpus_w2v, model_w2v)
+            clusterizar_documentos(embeddings, corpus_w2v)
 
-        # Visualización PCA de representaciones vectoriales
+    # Visualización PCA de representaciones vectoriales
     if args.pca:
         if args.pca_tipo == "npy":
             vectores = cargar_vectores(args.pca_path, tipo="npy")
@@ -228,55 +232,41 @@ def main():
             vectores,
             etiquetas=corpus["Polarity"],
             titulo=args.pca_title,
-            output_path="reports/figures/pca_" + args.pca_title + ".png"
+            output_path="reports/figures/" + args.pca_title + ".png"
         )
 
     # Clasificación: experimentos acumulativos con diferentes niveles de procesamiento
+
     if args.clasificacion:
         experimentos = [
             {
                 "descripcion": "Sin preprocesamiento",
                 "corpus": corpus,
-                "normalizar_texto": False,
-                "lematizar_stem": False,
-                "eliminar_stop": False,
-                "metodo_lematizar": "lematizar",
                 "vectorizer": CountVectorizer()
             },
             {
                 "descripcion": "Con minúsculas",
                 "corpus": procesar_corpus(corpus, normalizar_texto=True),
-                "normalizar_texto": True,
-                "lematizar_stem": False,
-                "eliminar_stop": False,
-                "metodo_lematizar": "lematizar",
                 "vectorizer": CountVectorizer(lowercase=True)
             },
             {
                 "descripcion": "Con minúsculas y lematización",
                 "corpus": procesar_corpus(corpus, normalizar_texto=True, lematizar_stem=True, metodo_lematizar="lematizar"),
-                "normalizar_texto": True,
-                "lematizar_stem": True,
-                "eliminar_stop": False,
-                "metodo_lematizar": "lematizar",
                 "vectorizer": CountVectorizer(lowercase=True)
             },
             {
                 "descripcion": "Con minúsculas, lematización y min_df=10",
                 "corpus": procesar_corpus(corpus, normalizar_texto=True, lematizar_stem=True, metodo_lematizar="lematizar"),
-                "normalizar_texto": True,
-                "lematizar_stem": True,
-                "eliminar_stop": False,
-                "metodo_lematizar": "lematizar",
                 "vectorizer": CountVectorizer(lowercase=True, min_df=10)
+            },
+            {
+                "descripcion": "Embeddings de documentos (Word2Vec)",
+                "X_override": np.load("data/interim/doc_embeddings.npy"),
+                "y_override": corpus["Polarity"].astype(int).values
             }
         ]
-        for exp in experimentos:
-            print(f"\nEjecutando experimento: {exp['descripcion']}")
-            ejecutar_experimentos_clasificacion(
-                exp["corpus"],
-                preprocesamientos=[{"vectorizer": exp["vectorizer"]}]
-            )
+
+        ejecutar_experimentos_clasificacion(experimentos)
 
     # LSA: usa la matriz tfidf generada en BoW
     if args.lsa:
