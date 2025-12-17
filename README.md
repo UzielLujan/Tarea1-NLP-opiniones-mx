@@ -1,109 +1,109 @@
-# Procesamiento de Texto e Imagenes con Deep Learning
+# Text and Image Processing with Deep Learning
 
-# 📚 Tarea 1 — Análisis integral de corpus en español
+# Task 1 — Comprehensive Analysis of Spanish Corpus
 
-Este repositorio contiene la implementación de un **pipeline completo de Procesamiento de Lenguaje Natural (NLP)** aplicado a un corpus en español con 5 clases.  
-El proyecto forma parte de la **Maestría en Cómputo Estadístico** y cubre desde análisis descriptivo hasta representaciones vectoriales y clasificación supervisada.
-
----
-
-## Objetivo
-Aplicar un pipeline integral de NLP para:
-- Analizar y describir corpus en español.
-- Evaluar leyes empíricas del lenguaje (ej. Ley de Zipf).
-- Explorar estructuras léxicas y gramaticales.
-- Construir representaciones (BoW, TF-IDF, Word2Vec).
-- Realizar clustering, clasificación y análisis de tópicos.
-- Explicar resultados con evidencia cuantitativa y visual.
+This repository contains the implementation of a **complete Natural Language Processing (NLP) pipeline** applied to a Spanish corpus with 5 classes.  
+The project is part of the **Master's in Statistical Computing** and covers everything from descriptive analysis to vector representations and supervised classification.
 
 ---
 
-## 📂 Estructura del proyecto
+## Objective
+Apply a comprehensive NLP pipeline to:
+- Analyze and describe Spanish corpora.
+- Evaluate empirical language laws (e.g., Zipf's Law).
+- Explore lexical and grammatical structures.
+- Build representations (BoW, TF-IDF, Word2Vec).
+- Perform clustering, classification, and topic analysis.
+- Explain results with quantitative and visual evidence.
+
+---
+
+## Project Structure
 ```bash
 Tarea1_NLP-opiniones-mx/
-│── data/                 # Corpus y datos procesados
-│   ├── raw/              # Corpus original
-│   ├── interim/          # Datos intermedios (tokens, embeddings)
-│   └── processed/        # Datos listos para modelado
+│── data/                 # Corpus and processed data
+│   ├── raw/              # Original corpus
+│   ├── interim/          # Intermediate data (tokens, embeddings)
+│   └── processed/        # Data ready for modeling
 │
-│── src/                  # Código fuente en módulos
-│   ├── preprocessing/    # Limpieza, stopwords, tokenización, stemming
-│   ├── analysis/         # Estadísticas descriptivas, Ley de Zipf, hapax
-│   ├── representaciones/ # BoW, TF-IDF, bigramas, selección de características
+│── src/                  # Source code in modules
+│   ├── preprocessing/    # Cleaning, stopwords, tokenization, stemming
+│   ├── analysis/         # Descriptive statistics, Zipf's Law, hapax
+│   ├── representaciones/ # BoW, TF-IDF, bigrams, feature selection
 │   ├── embeddings/       # Word2Vec, doc embeddings
-│   ├── modeling/         # Clasificación (SVM, Regresión Logística)
-│   ├── clustering/       # K-means, análisis de clústeres
-│   ├── topics/           # LSA con 50 tópicos
-│   └── visualization/    # Gráficas y utilidades
+│   ├── modeling/         # Classification (SVM, Logistic Regression)
+│   ├── clustering/       # K-means, cluster analysis
+│   ├── topics/           # LSA with 50 topics
+│   └── visualization/    # Graphs and utilities
 │
-│── notebooks/            # Experimentos y prototipos rápidos
+│── notebooks/            # Experiments and quick prototypes
 │
 │── reports/
-│   ├── figures/          # Imágenes generadas
+│   ├── figures/          # Generated images
 │   └── Tarea1_Reporte.pdf
 │
-│── tests/                # Unit tests para funciones clave
+│── tests/                # Unit tests for key functions
 │
-│── requirements.txt      # Dependencias
-│── README.md             # Documentación del proyecto
-│── main.py               # Script principal que ejecuta el pipeline completo
-
+│── requirements.txt      # Dependencies
+│── README.md             # Project documentation
+│── main.py               # Main script that runs the complete pipeline
 ```
-## Entorno reproducible
 
-Para correr este proyecto localmente, usar el entorno `conda` definido en `environment.yml`.
+## Reproducible Environment
 
-### Crear entorno desde cero
+To run this project locally, use the `conda` environment defined in `environment.yml`.
+
+### Create environment from scratch
 
 ```bash
 conda env create -f environment.yml
 conda activate tarea1-nlp
 ```
-## Ejecutar el pipeline completo
-Para ejecutar el pipeline completo, correr:
+## Run the complete pipeline
+To execute the complete pipeline, run:
 ```bash
 python main.py --pipeline_completo
 ```
 
-## Algunos comandos para ejecutar el pipeline por partes
+## Some commands to run the pipeline in parts
 
-0. Estadísticas generales del corpus
+0. General corpus statistics
 ```bash
 python main.py --estadisticas
 ```
 
-1. Analizar Ley de Zipf sin stopwords y con top_n=100:
+1. Analyze Zipf's Law without stopwords and with top_n=100:
 ```bash
 python main.py --zipf --sin_stopwords --top_n 100
 ```
 
-2. Generar palabras frecuentes y 4-gramas POS:
+2. Generate frequent words and 4-gram POS:
 ```bash
 python main.py --frecuentes --pos
 ```
-3. Entrenar Word2Vec y correr analogías:
+3. Train Word2Vec and run analogies:
 ```bash
 python main.py --word2vec
 ```
-4. Crear BoW y TF-IDF con bigramas y min_df=10:
+4. Create BoW and TF-IDF with bigrams and min_df=10:
 ```bash
 python main.py --bow --min_df 10 --ngram_max 2
 ```
 
-5. Visualizar representacion vectoriales con PCA
+5. Visualize vector representations with PCA
 ```bash
 python main.py --pca --pca_tipo pkl --pca_path data/interim/bow_vectorizer.pkl --pca_title "PCA BoW"
 python main.py --pca --pca_tipo pkl --pca_path data/interim/tdidf_vectorizer.pkl --pca_title "PCA TDiDF"
 python main.py --pca --pca_tipo model --pca_path data/interim/word2vec.model --pca_title "PCA Word2Vec"
 python main.py --pca --pca_tipo npy --pca_path data/interim/doc_embeddings.npy --pca_title "PCA Doc Embeddings"
 ```
-6. Ejecutar clasificacion (Regresión Logística) con diferentes niveles de preprocesamiento:
+6. Run classification (Logistic Regression) with different preprocessing levels:
 ```bash
 python main.py --clasificacion
 ``` 
 
-7. Ejecutar solo LSA:
+7. Run only LSA:
 ```bash
 python main.py --lsa
 ```
-> **Nota:** Para consultar la lista completa de comandos y ejemplos de uso del pipeline por módulos, revisa el archivo [`argparse_commands.md`](./argparse_commands.md).
+> **Note:** To check the complete list of commands and usage examples for the pipeline by modules, review the file [`argparse_commands.md`](./argparse_commands.md).

@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import os
 import pickle
 
-def construir_bow_tfidf(df: pd.DataFrame, columna_texto="Review", ngram_range=(1,1), min_df=1, max_df=1.0, guardar=True):
+def construir_bow_tfidf(df: pd.DataFrame, columna_texto="Review", ngram_range=(1,1), min_df=5, max_df=1.0, guardar=True):
     print("\n🧠 Construyendo representaciones BoW y TF-IDF...")
 
     textos = df[columna_texto].astype(str).tolist()

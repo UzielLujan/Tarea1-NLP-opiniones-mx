@@ -1,23 +1,14 @@
 # Procesamiento y análisis de texto
 pandas
-numpy
-scikit-learn
-nltk
-spacy
-gensim
-
-
+numpy==2.0.0
+scikit-learn==1.2.2
 matplotlib
 seaborn
-
-
+spacy==3.5.3
+nltk
+gensim==4.3.1
 tqdm
+scipy==1.10.1
 
-
-scipy
-
-
-scikit-learn
-
-
+# Modelo de idioma español para spaCy
 es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.5.0/es_core_news_sm-3.5.0-py3-none-any.whl

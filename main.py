@@ -46,6 +46,7 @@ def main():
     parser.add_argument("--sin_hapax", action="store_true")
     parser.add_argument("--top_n", type=int, default=None)
     parser.add_argument("--min_df", type=int, default=1)
+    parser.add_argument("--max_df", type=float, default=1.0)
     parser.add_argument("--ngram_max", type=int, default=1)
     parser.add_argument("--custom_words", action="store_true", help="Filtrar palabras personalizadas")
     # Argumentos para visualizaciones
@@ -181,7 +182,8 @@ def main():
         bow, tfidf, vec_bow, vec_tfidf = construir_bow_tfidf(
             corpus_bow,
             ngram_range=(1, args.ngram_max),
-            min_df=args.min_df
+            min_df=args.min_df,
+            max_df=args.max_df
         )
 
     # Selección de características: usa el corpus y matrices generadas en BoW
